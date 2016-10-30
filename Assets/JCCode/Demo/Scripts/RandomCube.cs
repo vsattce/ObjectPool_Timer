@@ -4,7 +4,7 @@ using JCCode;
 
 public class RandomCube : MonoBehaviour 
 {
-    float _t = 3.0f;
+    float _t = 1.0f;
     float _timer = 0.0f;
 
     void OnEnable()

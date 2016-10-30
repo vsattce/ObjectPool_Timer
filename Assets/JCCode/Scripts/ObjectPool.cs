@@ -33,7 +33,7 @@ namespace JCCode
             }
         }
 
-        #region static Function CreatePool
+        #region CreatePool
         /// <summary>
         /// Creates the start up pools.
         /// in game start spawn object and create objectpool
@@ -281,6 +281,81 @@ namespace JCCode
 
         #endregion
 
+        #region ObjectPool Status
+
+        public static int CountInPooled(GameObject prefab)
+        {
+            List<GameObject> list;
+            if (_instance._pooledObjects.TryGetValue(prefab, out list))
+                return list.Count;
+            return 0;
+        }
+
+        public static int CountInPooled<T>(T prefab) where T :Component
+        {
+            return CountInPooled(prefab.gameObject);
+        }
+
+        public static List<GameObject> GetObjectPool(GameObject prefab)
+        {
+            List<GameObject> list;
+            _instance._pooledObjects.TryGetValue(prefab, out list);
+            return list;
+        }
+
+        public static List<T> GetObjectPool<T>(T prefab) where T :Component
+        {
+            List<GameObject> list;
+            _instance._pooledObjects.TryGetValue(prefab.gameObject, out list);
+            List<T> listT = new List<T>();
+            for (int i = 0; i < list.Count; i++)
+                listT.Add(list[i].GetComponent<T>());
+            return listT;
+        }
+
+        #endregion
+
+        #region Destroy
+        /// <summary>
+        /// Destroies the pool.
+        /// Only Destroy PooledObject
+        /// </summary>
+        /// <param name="prefab">Prefab.</param>
+        public static void DestroyPool(GameObject prefab)
+        {
+            List<GameObject> pooled;
+            if (_instance._pooledObjects.TryGetValue(prefab, out pooled))
+            {
+                for (int i = 0; i < pooled.Count; i++)
+                    GameObject.Destroy(pooled[i]);
+                pooled.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Destroies the pool.
+        /// Only Destroy PooledObject
+        /// </summary>
+        /// <param name="prefab">Prefab.</param>
+        /// <typeparam name="T">The 1st type parameter.</typeparam>
+        public static void DestroyPool<T>(T prefab) where T :Component
+        {
+            DestroyPool(prefab.gameObject);
+        }
+
+        public static void DestroyAllPool(GameObject prefab)
+        {
+            RecycleAll(prefab);
+            DestroyPool(prefab);
+        }
+
+        public static void DestroyAllPool<T>(T prefab) where T : Component
+        {
+            DestroyAllPool(prefab.gameObject);
+        }
+
+        #endregion
+
         #region System
         void Awake()
         {
@@ -396,5 +471,52 @@ namespace JCCode
             ObjectPool.RecycleAll(prefab);
         }
         #endregion
+
+        #region ObjectPool Status
+
+        public static int CountInPooled(this GameObject prefab)
+        {
+            return ObjectPool.CountInPooled(prefab);
+        }
+
+        public static int CountInPooled<T>(this T prefab) where T : Component
+        {
+            return ObjectPool.CountInPooled(prefab);
+        }
+
+        public static List<GameObject> GetObjectPool(this GameObject prefab)
+        {
+            return ObjectPool.GetObjectPool(prefab);
+        }
+
+        public static List<T> GetObjectPool<T>(this T prefab) where T : Component
+        {
+            return ObjectPool.GetObjectPool(prefab);
+        }
+
+        #endregion
+
+        #region Destroy
+        public static void DestroyPool(this GameObject prefab)
+        {
+            ObjectPool.DestroyPool(prefab);
+        }
+
+        public static void DestroyPool<T>(this T prefab) where T : Component
+        {
+            ObjectPool.DestroyPool(prefab);
+        }
+
+        public static void DestroyAllPool(this GameObject prefab)
+        {
+            ObjectPool.DestroyAllPool(prefab);
+        }
+
+        public static void DestroyAllPool<T>(this T prefab) where T : Component
+        {
+            ObjectPool.DestroyAllPool(prefab);
+        }
+        #endregion
+
     }
 }
