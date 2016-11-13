@@ -2,7 +2,7 @@
 using System.Collections;
 using JCCode;
 
-public class ObjectPoolDemo : MonoBehaviour 
+public class ObjectPoolDemo1 : MonoBehaviour 
 {
     public RandomCube randomCube;
     public RandomSphere randomSphere;
@@ -10,19 +10,14 @@ public class ObjectPoolDemo : MonoBehaviour
     private float _delayTime = 2.0f;
     private float _timer = 0.0f;
 
-    void Awake()
-    {
-        randomSphere.CreatePool();
-    }
-
     void Update()
     {
         _timer += Time.deltaTime;
         if (_timer > _delayTime)
         {
-            randomCube.Spawn(Vector3.zero);
+            randomCube.Spawn(Vector3.one);
 
-            randomSphere.Spawn(Vector3.one * Random.Range(-2.0f, 2.0f));
+            randomSphere.Spawn(Vector3.one * 2.0f);
         }
     }
 }

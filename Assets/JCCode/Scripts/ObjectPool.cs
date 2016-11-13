@@ -28,10 +28,16 @@ namespace JCCode
             {
                 if (_instance == null)
                     _instance = GameObject.FindObjectOfType<ObjectPool>();
-                
+
+                if (_instance == null)
+                    _instance = new GameObject("ObjectPool").AddComponent<ObjectPool>();
+
                 return _instance;
             }
         }
+
+        // create strtup pool only call once
+        private bool _isCreated = false;
 
         #region CreatePool
         /// <summary>
@@ -40,14 +46,19 @@ namespace JCCode
         /// </summary>
         static void CreateStartUpPools()
         {
-            var pools = _instance.startUpPools;
-            if (pools != null)
+            if (!instance._isCreated)
             {
-                if (pools.Length > 0)
+                instance._isCreated = true;
+
+                var pools = _instance.startUpPools;
+                if (pools != null)
                 {
-                    for (int i = 0; i < pools.Length; i++)
+                    if (pools.Length > 0)
                     {
-                        CreatePool(pools[i].prefab, pools[i].count);
+                        for (int i = 0; i < pools.Length; i++)
+                        {
+                            CreatePool(pools[i].prefab, pools[i].count);
+                        }
                     }
                 }
             }
@@ -63,7 +74,7 @@ namespace JCCode
         {
             if (prefab != null)
             {
-                if (!_instance._pooledObjects.ContainsKey(prefab))
+                if (!instance._pooledObjects.ContainsKey(prefab))
                 {
                     List<GameObject> list = new List<GameObject>();
                     _instance._pooledObjects.Add(prefab, list);
@@ -313,22 +324,35 @@ namespace JCCode
             return listT;
         }
 
+        public static bool HasObject(GameObject obj)
+        {
+            return _instance._pooledObjects.ContainsKey(obj);
+        }
+
+        public static bool HasObject<T>(T obj) where T : Component
+        {
+            return HasObject(obj.gameObject);
+        }
+
         #endregion
 
         #region Destroy
         /// <summary>
         /// Destroies the pool.
         /// Only Destroy PooledObject
+        /// And Remove Key from Dictionary
         /// </summary>
         /// <param name="prefab">Prefab.</param>
         public static void DestroyPool(GameObject prefab)
         {
             List<GameObject> pooled;
-            if (_instance._pooledObjects.TryGetValue(prefab, out pooled))
+            if (instance._pooledObjects.TryGetValue(prefab, out pooled))
             {
                 for (int i = 0; i < pooled.Count; i++)
                     GameObject.Destroy(pooled[i]);
                 pooled.Clear();
+
+                instance._pooledObjects.Remove(prefab);
             }
         }
 
@@ -366,6 +390,7 @@ namespace JCCode
             }
         }
         #endregion
+
     }
 
     public static class ObjectPoolExtension
@@ -492,6 +517,16 @@ namespace JCCode
         public static List<T> GetObjectPool<T>(this T prefab) where T : Component
         {
             return ObjectPool.GetObjectPool(prefab);
+        }
+
+        public static bool HasObject(this GameObject obj)
+        {
+            return ObjectPool.HasObject(obj);
+        }
+
+        public static bool HasObject<T>(this T obj) where T : Component
+        {
+            return ObjectPool.HasObject(obj);
         }
 
         #endregion
